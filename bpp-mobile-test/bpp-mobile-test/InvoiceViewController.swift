@@ -13,83 +13,21 @@ class InvoiceViewController: UIViewController, UITableViewDataSource, UITableVie
     @IBOutlet weak var table: UITableView!
     @IBOutlet weak var previousButton: UIButton!
     @IBOutlet weak var nextButton: UIButton!
-    @IBOutlet weak var titleLabel: UILabel!
     
     var invoiceList: Array<[String: String]> = Array.init()
     var currentInvoice: Int = 0
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        titleLabel.text = ""
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
         
         previousButton.isHidden = true
         nextButton.isHidden = true
-
-        let url: String = "http://test-mobile.dev-bpp.com.br/invoice"
-        var urlRequest = URLRequest(url: URL(string: url)!)
         
-        urlRequest.httpMethod = "GET"
-        urlRequest.timeoutInterval = 60
-        
-        let urlSession = URLSession.shared
-        
-        let request = urlSession.dataTask(with: urlRequest) { (data, response, error) in
-            
-            var responseJson: Any
-            
-            if (error != nil) {
-                self.showError(message: "Erro no recebimento dos invoices")
-                return
-            }
-            
-            do {
-                responseJson = try JSONSerialization.jsonObject(with: data!, options: [])
-            } catch {
-                self.showError(message: "Erro ao processar os invoices")
-                return
-            }
-            
-            let response = responseJson as! Array<[String: Any]>
-            
-            //print("Response: " + response.description)
-            
-            self.invoiceList.removeAll()
-            
-            for r in response
-            {
-                var oneInvoice: [String: String] = Dictionary.init()
-                
-                oneInvoice["transactionId"] = String.init(format: "%@", r["transactionId"] as! CVarArg)
-                oneInvoice["transactionFormattedDate"] = String.init(format: "%@", r["transactionFormattedDate"] as! CVarArg)
-                oneInvoice["transactionAmount"] = String.init(format: "%@ %@", r["transactionAmount"] as! CVarArg, r["transactionCurrency"] as! CVarArg)
-                oneInvoice["billingAmount"] = String.init(format: "%@ %@", r["billingAmount"] as! CVarArg, r["billingCurrency"] as! CVarArg)
-                oneInvoice["transactionStatus"] = String.init(format: "%@", r["transactionStatus"] as! CVarArg)
-                oneInvoice["transactionName"] = String.init(format: "%@", r["transactionName"] as! CVarArg)
-                oneInvoice["merchantName"] = String.init(format: "%@", r["merchantName"] as! CVarArg)
-                oneInvoice["merchantCode"] = String.init(format: "%@ (%@)", r["mccCode"] as! CVarArg, r["mccDescription"] as! CVarArg)
-                
-                self.invoiceList.append(oneInvoice)
-            }
-            
-            if (self.invoiceList.count > 0) {
-                self.showInvoice(number: 1);
-            }
-            else {
-                self.showError(message: "Nenhum invoice recebido")
-            }
-            
-            if (false) //(response["status"] == "error")
-            {
-                //self.showError(message: String.init(format: "Erro %@: %@", response["code"]!, response["message"]!))
-            }
-            else
-            {
-                //self.goToMainMenu()
-            }
-        }
-        
-        request.resume()
+        self.showInvoice(number: currentInvoice);
     }
     
     override func didReceiveMemoryWarning() {
@@ -104,25 +42,17 @@ class InvoiceViewController: UIViewController, UITableViewDataSource, UITableVie
         showInvoice(number: currentInvoice + 1)
     }
     
-    func showError(message: String) {
-        DispatchQueue.main.async {
-            let alert: UIAlertController = UIAlertController.init(title: "Erro", message: message, preferredStyle: UIAlertControllerStyle.alert)
-            
-            alert.show(self, sender: self)
-        }
-    }
-    
     func showInvoice(number: Int)
     {
         DispatchQueue.main.async {
             self.currentInvoice = number
             
-            self.titleLabel.text = String.init(format: "Invoice %d", self.currentInvoice)
-            
             self.table.reloadData()
             
             self.previousButton.isHidden = (self.currentInvoice == 1)
             self.nextButton.isHidden = (self.currentInvoice == self.invoiceList.count)
+            
+            self.title = String.init(format: "Invoice %d", self.currentInvoice)
         }
     }
     
@@ -141,7 +71,7 @@ class InvoiceViewController: UIViewController, UITableViewDataSource, UITableVie
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "tableCell") as! InvoiceTableCell
+        let cell = tableView.dequeueReusableCell(withIdentifier: "detailsTableCell") as! InvoiceTableCell
         
         let index: Int = currentInvoice - 1
         
