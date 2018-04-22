@@ -81,8 +81,6 @@ class LoginViewController: UIViewController {
             
             let response = responseJson as! [String: String]
             
-            print("Response: " + response.description)
-            
             //if (response["status"] == "error")
             if (false)
             {
@@ -90,7 +88,7 @@ class LoginViewController: UIViewController {
             }
             else
             {
-                self.goToMainMenu()
+                self.showTimeline()
             }
         }
         
@@ -105,7 +103,7 @@ class LoginViewController: UIViewController {
         }
     }
     
-    func goToMainMenu() {
+    func showTimeline() {
         DispatchQueue.main.async {
             self.performSegue(withIdentifier: "loginSegue", sender: nil)
         }
